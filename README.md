@@ -37,6 +37,47 @@ SALES_AGENT_CONFIG=config/sales_agent.bs.yaml
 python src/sales_agent.py
 ```
 
+## HTTP API (lokalno)
+
+```bash
+uvicorn src.api:app --reload --host 0.0.0.0 --port 8000
+```
+
+Test:
+
+```bash
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Treba mi bolji prodajni proces za moj tim."}'
+```
+
+## Azure deployment (Container Apps + azd)
+
+Preduslovi:
+
+- Azure CLI (`az`)
+- Azure Developer CLI (`azd`)
+- Docker
+
+Koraci:
+
+```bash
+az login
+azd auth login
+azd init -t .
+azd env new
+azd env set OPENAI_API_KEY "<tvoj_openai_api_key>"
+azd env set SALES_AGENT_MODEL "gpt-4o-mini"
+azd up
+```
+
+Važne Azure datoteke:
+
+- `azure.yaml` — servis definisan kao `containerapp`
+- `infra/main.bicep` — ACR, Managed Identity, Container Apps Environment, Container App
+- `infra/main.parameters.json` — parametri za `azd`
+- `Dockerfile` — image za API runtime
+
 ## Kako dodatno „optimalno“ podesiti
 
 1. Ako želiš kreativniji pitch, podigni `temperature` na `0.45`.
@@ -49,5 +90,6 @@ python src/sales_agent.py
 ## Datoteke
 
 - `src/sales_agent.py` — runtime agent
+- `src/api.py` — HTTP API za web/cloud deployment
 - `config/sales_agent.bs.yaml` — persona, guardrails, sales logika i model settings
 - `.env.example` — env var template
